@@ -20,7 +20,7 @@ struct Professor
 };
 struct Question
 {
-    char text[100];
+    char text[150];
     int answer;
 };
 
@@ -96,7 +96,7 @@ int main()
     int server_socket, client_socket;            // Sockets del servidor y del cliente
     struct sockaddr_in server_addr, client_addr; // Estructuras para almacenar la información del servidor y del cliente
     socklen_t client_len = sizeof(client_addr);  // Tamaño de la estructura del cliente
-    int selectedProfessor;                       // Profesor seleccionado por el cliente
+    int selectedProfessor;                 // Profesor seleccionado por el cliente
     initializeProfessors();                      // Inicializa la lista de profesores
     initializeQuestions();                       // Inicializa la lista de preguntas
 
@@ -151,7 +151,7 @@ int main()
             close(client_socket);
             continue;
         }
-    // Evalúa la elección del cliente
+        // Evalúa la elección del cliente
         switch (client_choice)
         {
         case 1:
@@ -165,18 +165,16 @@ int main()
             }
 
             // Recibe la elección del profesor por parte del cliente
-            int selectedProfessor;
             if (recv(client_socket, &selectedProfessor, sizeof(int), 0) == -1)
             {
                 perror("Error al recibir la elección del profesor");
                 close(client_socket);
                 break;
-            }
+            }       
             // Verifica que la elección del profesor sea válida
             if (selectedProfessor < 1 || selectedProfessor > 10)
             {
-                printf("Selección de profesor no válida. Cerrando la conexión.\n");
-                close(client_socket);
+                printf("Profesor no válido. Cerrando la conexión.\n");
                 break;
             }
             // Genera preguntas aleatorias y envía cada pregunta al cliente
@@ -184,9 +182,9 @@ int main()
             for (int i = 0; i < MAX_QUESTIONS; i++)
             {
                 // Genera preguntas aleatorias
-                int randomIndex = rand() % 30; // 30 es el número total de preguntas
+                int randomIndex = rand() % 30;                                // 30 es el número total de preguntas
                 strcpy(randomQuestions[i].text, questions[randomIndex].text); // Copia el texto de la pregunta
-                randomQuestions[i].answer = questions[randomIndex].answer; // Copia la respuesta de la pregunta
+                randomQuestions[i].answer = questions[randomIndex].answer;    // Copia la respuesta de la pregunta
             }
 
             // Envía las preguntas aleatorias al cliente
@@ -208,7 +206,7 @@ int main()
             for (int i = 0; i < 10; i++)
             {
                 // Selecciona una pregunta aleatoria del arreglo de preguntas
-                int randomIndex = rand() % 10; // 10 es el número total de preguntas 
+                int randomIndex = rand() % 10;                           // 10 es el número total de preguntas
                 struct Question randomQuestion = questions[randomIndex]; // Copia la pregunta aleatoria
 
                 // Envía la pregunta al cliente
@@ -234,10 +232,39 @@ int main()
             // Envía un mensaje de agradecimiento al cliente
             printf("Evaluación docente completada. Gracias por participar.\n");
             break;
-
         case 2:
+            // Bubble sort implementation to sort professors array based on their score
+            void bubbleSort(struct Professor professors[], int n)
+            {
+                int i, j;
+                struct Professor temp;
+                for (i = 0; i < n - 1; i++)
+                {
+                    for (j = 0; j < n - i - 1; j++)
+                    {
+                        if (professors[j].score < professors[j + 1].score)
+                        {
+                            // swap professors[j] and professors[j+1]
+                            temp = professors[j];
+                            professors[j] = professors[j + 1];
+                            professors[j + 1] = temp;
+                        }
+                    }
+                }
+            }
+            bubbleSort(professors, 10);
+            if (send(client_socket, professors, sizeof(professors), 0) == -1)
+            {
+                perror("Error al enviar la lista de profesores al cliente");
+                close(client_socket);
+                break;
+            }
+
+            break;
+        case 3:
             // Opción 2: Cerrar sesión del cliente
             // Cierra la conexión con el cliente
+
             close(client_socket);
             printf("Cliente desconectado.\n");
             break;
@@ -251,6 +278,6 @@ int main()
     }
 
     // Cerrar el socket del servidor (esto no se alcanza porque el bucle es infinito)
-    close(server_socket);
+    // close(server_socket);
     return 0;
 }
