@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <time.h>
+#include <pthread.h> // Librería para hilos
 
 #define PORT 8080        // Puerto de conexión
 #define MAX_CLIENTS 10   // Número máximo de clientes
@@ -47,7 +48,7 @@ void initializeProfessors()
         strcpy(professors[i].name, sampleProfessors[i].name);         // Copia el nombre del profesor
         strcpy(professors[i].schedule, sampleProfessors[i].schedule); // Copia el horario del profesor
         professors[i].score = sampleProfessors[i].score;              // Copia el puntaje del profesor
-    }
+            }
 }
 // inicializar preguntas----------------------------------------------------------------------------------------
 void initializeQuestions()
@@ -90,56 +91,20 @@ void initializeQuestions()
         questions[i].answer = sampleQuestions[i].answer;    // Copia la respuesta de la pregunta
     }
 }
-
-int main()
-{
-    int server_socket, client_socket;            // Sockets del servidor y del cliente
-    struct sockaddr_in server_addr, client_addr; // Estructuras para almacenar la información del servidor y del cliente
-    socklen_t client_len = sizeof(client_addr);  // Tamaño de la estructura del cliente
-    int selectedProfessor;                 // Profesor seleccionado por el cliente
-    initializeProfessors();                      // Inicializa la lista de profesores
-    initializeQuestions();                       // Inicializa la lista de preguntas
-
-    // Crear socket
-    server_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (server_socket == -1)
+    // Estructura para almacenar la información del cliente
+    struct ClientInfo
     {
-        perror("Error al crear el socket del servidor");
-        exit(1);
-    }
+        int socket;
+        struct sockaddr_in address;
+    };
 
-    server_addr.sin_family = AF_INET;         // IPv4
-    server_addr.sin_port = htons(PORT);       // Puerto de conexión
-    server_addr.sin_addr.s_addr = INADDR_ANY; // Cualquier dirección IP
-
-    // Vincular el socket a una dirección y puerto
-    if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1)
+    // Función para manejar la conexión de un cliente
+    void *handleClient(void *arg)
     {
-        perror("Error al vincular el socket");
-        exit(1);
-    }
-
-    // Escuchar conexiones entrantes
-    if (listen(server_socket, MAX_CLIENTS) == -1)
-    {
-        perror("Error al escuchar conexiones");
-        exit(1);
-    }
-
-    printf("Servidor esperando conexiones en el puerto %d...\n", PORT); // Mensaje de espera
-
-    while (1)
-    {
-        // Aceptar una conexión entrante
-        client_socket = accept(server_socket, (struct sockaddr *)&client_addr, &client_len);
-        // Verifica si hubo un error al aceptar la conexión
-        if (client_socket == -1)
-        {
-            perror("Error al aceptar la conexión");
-            continue;
-        }
-        // Imprime un mensaje de conexión exitosa
-        printf("Cliente conectado.\n");
+        struct ClientInfo *clientInfo = (struct ClientInfo *)arg;
+        int client_socket = clientInfo->socket;
+        struct sockaddr_in client_addr = clientInfo->address;
+        int selectedProfessor; // Profesor seleccionado por el cliente
 
         // Variables para almacenar la opción del cliente
         int client_choice;
@@ -149,7 +114,7 @@ int main()
         {
             perror("Error al recibir la opción del cliente");
             close(client_socket);
-            continue;
+            pthread_exit(NULL);
         }
         // Evalúa la elección del cliente
         switch (client_choice)
@@ -161,7 +126,7 @@ int main()
             {
                 perror("Error al enviar la lista de profesores al cliente");
                 close(client_socket);
-                break;
+                pthread_exit(NULL);
             }
 
             // Recibe la elección del profesor por parte del cliente
@@ -169,13 +134,14 @@ int main()
             {
                 perror("Error al recibir la elección del profesor");
                 close(client_socket);
-                break;
-            }       
+                pthread_exit(NULL);
+            }
             // Verifica que la elección del profesor sea válida
             if (selectedProfessor < 1 || selectedProfessor > 10)
             {
                 printf("Profesor no válido. Cerrando la conexión.\n");
-                break;
+                close(client_socket);
+                pthread_exit(NULL);
             }
             // Genera preguntas aleatorias y envía cada pregunta al cliente
             struct Question randomQuestions[MAX_QUESTIONS];
@@ -192,7 +158,7 @@ int main()
             {
                 perror("Error al enviar las preguntas al cliente");
                 close(client_socket);
-                break;
+                pthread_exit(NULL);
             }
 
             // Implementa la lógica para seleccionar y enviar las preguntas al cliente
@@ -200,7 +166,7 @@ int main()
             {
                 perror("Error al enviar las preguntas al cliente");
                 close(client_socket);
-                break;
+                pthread_exit(NULL);
             }
             // Genera preguntas aleatorias y envía cada pregunta al cliente
             for (int i = 0; i < 10; i++)
@@ -214,7 +180,7 @@ int main()
                 {
                     perror("Error al enviar la pregunta al cliente");
                     close(client_socket);
-                    break;
+                    pthread_exit(NULL);
                 }
 
                 // Recibe la respuesta del cliente (1, 2 o 3)
@@ -223,7 +189,7 @@ int main()
                 {
                     perror("Error al recibir la respuesta del cliente");
                     close(client_socket);
-                    break;
+                    pthread_exit(NULL);
                 }
 
                 // Actualiza el puntaje del profesor según la respuesta del cliente
@@ -257,7 +223,7 @@ int main()
             {
                 perror("Error al enviar la lista de profesores al cliente");
                 close(client_socket);
-                break;
+                pthread_exit(NULL);
             }
 
             break;
@@ -266,18 +232,90 @@ int main()
             // Cierra la conexión con el cliente
 
             close(client_socket);
-            printf("Cliente desconectado.\n");
+             printf("\x1b[31mCliente desconectado.\n");
             break;
 
         default:
             // Opción no válida
             printf("Opción no válida. Cerrando la conexión.\n");
             close(client_socket);
+            pthread_exit(NULL);
             break;
         }
+
+        // Cierra la conexión con el cliente y libera la memoria de la estructura de información del cliente
+        close(client_socket);
+        free(clientInfo);
+        pthread_exit(NULL);
     }
 
-    // Cerrar el socket del servidor (esto no se alcanza porque el bucle es infinito)
-    // close(server_socket);
-    return 0;
-}
+    int main()
+    {
+        int server_socket; // Socket del servidor
+        struct sockaddr_in server_addr; // Estructura para almacenar la información del servidor
+        int selectedProfessor; // Profesor seleccionado por el cliente
+        initializeProfessors(); // Inicializa la lista de profesores
+        initializeQuestions(); // Inicializa la lista de preguntas
+
+        // Crear socket
+        server_socket = socket(AF_INET, SOCK_STREAM, 0);
+        if (server_socket == -1)
+        {
+            perror("Error al crear el socket del servidor");
+            exit(1);
+        }
+
+        server_addr.sin_family = AF_INET; // IPv4
+        server_addr.sin_port = htons(PORT); // Puerto de conexión
+        server_addr.sin_addr.s_addr = INADDR_ANY; // Cualquier dirección IP
+
+        // Vincular el socket a una dirección y puerto
+        if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1)
+        {
+            perror("Error al vincular el socket");
+            exit(1);
+        }
+
+        // Escuchar conexiones entrantes
+        if (listen(server_socket, MAX_CLIENTS) == -1)
+        {
+            perror("Error al escuchar conexiones");
+            exit(1);
+        }
+
+        printf("Servidor esperando conexiones en el puerto %d...\n", PORT); // Mensaje de espera
+
+        while (1)
+        {
+            // Aceptar una conexión entrante
+            struct sockaddr_in client_addr; // Estructura para almacenar la información del cliente
+            socklen_t client_len = sizeof(client_addr); // Tamaño de la estructura del cliente
+            int client_socket = accept(server_socket, (struct sockaddr *)&client_addr, &client_len);
+            // Verifica si hubo un error al aceptar la conexión
+            if (client_socket == -1)
+            {
+                perror("Error al aceptar la conexión");
+                continue;
+            }
+            // Imprime un mensaje de conexión exitosa
+             printf("\x1b[32mCliente conectado.\n");
+
+            // Crea una estructura para almacenar la información del cliente y pasa esa estructura como argumento a la función handleClient
+            struct ClientInfo *clientInfo = malloc(sizeof(struct ClientInfo));
+            clientInfo->socket = client_socket;
+            clientInfo->address = client_addr;
+            pthread_t thread;
+            if (pthread_create(&thread, NULL, handleClient, (void *)clientInfo) != 0)
+            {
+                perror("Error al crear el hilo");
+                close(client_socket);
+                continue;
+            }
+            // El hilo se encargará de manejar la conexión con el cliente
+            pthread_detach(thread);
+        }
+
+        // Cerrar el socket del servidor (esto no se alcanza porque el bucle es infinito)
+        // close(server_socket);
+        return 0;
+    }
