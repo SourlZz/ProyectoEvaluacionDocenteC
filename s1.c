@@ -273,13 +273,13 @@ void *handleClient(void *arg)
     // Recibe la elección del cliente
     if (send(client_socket, &bandera, sizeof(bandera), 0) == -1)
     {
-        perror("Error al enviar la lista de profesores al cliente");
+        //perror("Error al enviar la lista de profesores al cliente");
         close(client_socket);
         pthread_exit(NULL);
     }
     if (recv(client_socket, &client_choice, sizeof(int), 0) == -1)
     {
-        perror("Error al recibir la opción del cliente");
+        //perror("Error al recibir la opción del cliente");
         close(client_socket);
         pthread_exit(NULL);
     }
@@ -292,7 +292,7 @@ void *handleClient(void *arg)
 
         if (recv(client_socket, &typeProfessor, sizeof(int), 0) == -1)
         {
-            perror("Error al recibir la elección del profesor");
+           // perror("Error al recibir la elección del profesor");
             close(client_socket);
             pthread_exit(NULL);
         }
@@ -303,14 +303,14 @@ void *handleClient(void *arg)
          bandera++;
             if (send(client_socket, fullTimeProfessors, sizeof(fullTimeProfessors), 0) == -1)
             {
-                perror("Error al enviar la lista de profesores al cliente");
+                // perror("Error al enviar la lista de profesores al cliente");
                 close(client_socket);
                 pthread_exit(NULL);
             }
             // Recibe la elección del profesor por parte del cliente
             if (recv(client_socket, &selectedProfessor, sizeof(int), 0) == -1)
             {
-                perror("Error al recibir la elección del profesor");
+               // perror("Error al recibir la elección del profesor");
                 close(client_socket);
                 pthread_exit(NULL);
             }
@@ -334,7 +334,7 @@ void *handleClient(void *arg)
             // Envía las preguntas aleatorias al cliente
              if (send(client_socket, randomQuestions, sizeof(randomQuestions), 0) == -1)
             {
-                perror("Error al enviar las preguntas al cliente");
+                // perror("Error al enviar las preguntas al cliente");
                 close(client_socket);
                 pthread_exit(NULL);
             }
@@ -342,7 +342,7 @@ void *handleClient(void *arg)
             // Implementa la lógica para seleccionar y enviar las preguntas al cliente
             if (send(client_socket, personalquestions, sizeof(personalquestions), 0) == -1)
             {
-                perror("Error al enviar las preguntas al cliente");
+               // perror("Error al enviar las preguntas al cliente");
                 close(client_socket);
                 pthread_exit(NULL);
             }
@@ -356,7 +356,7 @@ void *handleClient(void *arg)
                 // Envía la pregunta al cliente
                 if (send(client_socket, &randomQuestion, sizeof(struct Question), 0) == -1)
                 {
-                    perror("Error al enviar la pregunta al cliente");
+                    //perror("Error al enviar la pregunta al cliente");
                     close(client_socket);
                     pthread_exit(NULL);
                 }
@@ -365,7 +365,7 @@ void *handleClient(void *arg)
 
                 if (recv(client_socket, &clientAnswer, sizeof(int), 0) == -1)
                 {
-                    perror("Error al recibir la respuesta del cliente");
+                   // perror("Error al recibir la respuesta del cliente");
                     close(client_socket);
                     pthread_exit(NULL);
                 }
@@ -378,13 +378,13 @@ void *handleClient(void *arg)
             {
                 if (send(client_socket, personalquestions[i].text, sizeof(personalquestions[i].text), 0) == -1)
                 {
-                    perror("Error al enviar las preguntas al cliente");
+                    //perror("Error al enviar las preguntas al cliente");
                     close(client_socket);
                     pthread_exit(NULL);
                 }
                 if (recv(client_socket, &clientAnswer, sizeof(int), 0) == -1)
                 {
-                    perror("Error al recibir la respuesta del cliente");
+                   // perror("Error al recibir la respuesta del cliente");
                     close(client_socket);
                     pthread_exit(NULL);
                 }
@@ -395,14 +395,14 @@ void *handleClient(void *arg)
          bandera++;
             if (send(client_socket, partTimeProfessors, sizeof(partTimeProfessors), 0) == -1)
             {
-                perror("Error al enviar la lista de profesores al cliente");
+                //perror("Error al enviar la lista de profesores al cliente");
                 close(client_socket);
                 pthread_exit(NULL);
             }
             // Recibe la elección del profesor por parte del cliente
             if (recv(client_socket, &selectedProfessor, sizeof(int), 0) == -1)
             {
-                perror("Error al recibir la elección del profesor");
+                // perror("Error al recibir la elección del profesor");
                 close(client_socket);
                 pthread_exit(NULL);
             }
@@ -426,7 +426,7 @@ void *handleClient(void *arg)
             // Envía las preguntas aleatorias al cliente
             if (send(client_socket, randomQuestions1, sizeof(randomQuestions1), 0) == -1)
             {
-                perror("Error al enviar las preguntas al cliente");
+                // perror("Error al enviar las preguntas al cliente");
                 close(client_socket);
                 pthread_exit(NULL);
             }
@@ -434,7 +434,7 @@ void *handleClient(void *arg)
             // Implementa la lógica para seleccionar y enviar las preguntas al cliente
             if (send(client_socket, personalquestions, sizeof(personalquestions), 0) == -1)
             {
-                perror("Error al enviar las preguntas al cliente");
+                // perror("Error al enviar las preguntas al cliente");
                 close(client_socket);
                 pthread_exit(NULL);
             }
@@ -448,7 +448,7 @@ void *handleClient(void *arg)
                 // Envía la pregunta al cliente
                 if (send(client_socket, &randomQuestion1, sizeof(struct Question), 0) == -1)
                 {
-                    perror("Error al enviar la pregunta al cliente");
+                    // perror("Error al enviar la pregunta al cliente");
                     close(client_socket);
                     pthread_exit(NULL);
                 }
@@ -457,7 +457,7 @@ void *handleClient(void *arg)
                 int clientAnswer; // Respuesta del cliente
                 if (recv(client_socket, &clientAnswer, sizeof(int), 0) == -1)
                 {
-                    perror("Error al recibir la respuesta del cliente");
+                    // perror("Error al recibir la respuesta del cliente");
                     close(client_socket);
                     pthread_exit(NULL);
                 }
@@ -471,13 +471,13 @@ void *handleClient(void *arg)
             {
                 if (send(client_socket, personalquestions[i].text, sizeof(personalquestions[i].text), 0) == -1)
                 {
-                    perror("Error al enviar las preguntas al cliente");
+                    //perror("Error al enviar las preguntas al cliente");
                     close(client_socket);
                     pthread_exit(NULL);
                 }
                 if (recv(client_socket, &clientAnswer, sizeof(int), 0) == -1)
                 {
-                    perror("Error al recibir la respuesta del cliente");
+                    //perror("Error al recibir la respuesta del cliente");
                     close(client_socket);
                     pthread_exit(NULL);
                 }
@@ -487,14 +487,14 @@ void *handleClient(void *arg)
          bandera++;
             if (send(client_socket, hourlyProfessors, sizeof(hourlyProfessors), 0) == -1)
             {
-                perror("Error al enviar la lista de profesores al cliente");
+                //perror("Error al enviar la lista de profesores al cliente");
                 close(client_socket);
                 pthread_exit(NULL);
             }
             // Recibe la elección del profesor por parte del cliente
             if (recv(client_socket, &selectedProfessor, sizeof(int), 0) == -1)
             {
-                perror("Error al recibir la elección del profesor");
+                //perror("Error al recibir la elección del profesor");
                 close(client_socket);
                 pthread_exit(NULL);
             }
@@ -518,7 +518,7 @@ void *handleClient(void *arg)
             // Envía las preguntas aleatorias al cliente
             if (send(client_socket, randomQuestions2, sizeof(randomQuestions2), 0) == -1)
             {
-                perror("Error al enviar las preguntas al cliente");
+                //perror("Error al enviar las preguntas al cliente");
                 close(client_socket);
                 pthread_exit(NULL);
             }
@@ -526,7 +526,7 @@ void *handleClient(void *arg)
             // Implementa la lógica para seleccionar y enviar las preguntas al cliente
             if (send(client_socket, personalquestions, sizeof(personalquestions), 0) == -1)
             {
-                perror("Error al enviar las preguntas al cliente");
+                //perror("Error al enviar las preguntas al cliente");
                 close(client_socket);
                 pthread_exit(NULL);
             }
@@ -549,7 +549,7 @@ void *handleClient(void *arg)
                 int clientAnswer; // Respuesta del cliente
                 if (recv(client_socket, &clientAnswer, sizeof(int), 0) == -1)
                 {
-                    perror("Error al recibir la respuesta del cliente");
+                    //perror("Error al recibir la respuesta del cliente");
                     close(client_socket);
                     pthread_exit(NULL);
                 }
@@ -563,13 +563,13 @@ void *handleClient(void *arg)
             {
                 if (send(client_socket, personalquestions[i].text, sizeof(personalquestions[i].text), 0) == -1)
                 {
-                    perror("Error al enviar las preguntas al cliente");
+                    // perror("Error al enviar las preguntas al cliente");
                     close(client_socket);
                     pthread_exit(NULL);
                 }
                 if (recv(client_socket, &clientAnswer, sizeof(int), 0) == -1)
                 {
-                    perror("Error al recibir la respuesta del cliente");
+                    // perror("Error al recibir la respuesta del cliente");
                     close(client_socket);
                     pthread_exit(NULL);
                 }
@@ -584,7 +584,7 @@ void *handleClient(void *arg)
         // Opción 2: Ver resultados
         if (recv(client_socket, &typeProfessor2, sizeof(int), 0) == -1)
         {
-            perror("Error al recibir la elección del profesor");
+            // perror("Error al recibir la elección del profesor");
             close(client_socket);
             pthread_exit(NULL);
         }
@@ -621,7 +621,7 @@ void *handleClient(void *arg)
             bubbleSort(FullOrdenedProfessors, 10);
             if (send(client_socket, FullOrdenedProfessors, sizeof(FullOrdenedProfessors), 0) == -1)
             {
-                perror("Error al enviar los profesores al cliente");
+                // perror("Error al enviar los profesores al cliente");
                 close(client_socket);
                 pthread_exit(NULL);
             }
@@ -656,7 +656,7 @@ void *handleClient(void *arg)
             bubbleSort2(PartOrdenedProfessors, 10);
             if (send(client_socket, PartOrdenedProfessors, sizeof(PartOrdenedProfessors), 0) == -1)
             {
-                perror("Error al enviar los profesores al cliente");
+               // perror("Error al enviar los profesores al cliente");
                 close(client_socket);
                 pthread_exit(NULL);
             }
@@ -690,7 +690,7 @@ void *handleClient(void *arg)
             bubbleSort3(HourlyOrdenedProfessors, 10);
             if (send(client_socket, HourlyOrdenedProfessors, sizeof(HourlyOrdenedProfessors), 0) == -1)
             {
-                perror("Error al enviar los profesores al cliente");
+                // perror("Error al enviar los profesores al cliente");
                 close(client_socket);
                 pthread_exit(NULL);
             }

@@ -11,7 +11,6 @@
 #define PORT 8080         // Puerto de conexión
 #define MAX_QUESTIONS 10  // Número máximo de preguntas
 #define MAX_PROFESSORS 10 // Número máximo de profesores
-int errorControl;
 // Estructuras ---------------------------------------------------------------------------------------------------
 struct Professor
 {
@@ -45,7 +44,6 @@ int establishConnection()
     if (client_socket == -1)
     {
         perror("Error al crear el socket del cliente");
-        scanf("%d", &errorControl);
         exit(1);
     }
 
@@ -58,7 +56,6 @@ int establishConnection()
 
     {
         perror("Error al conectar al servidor");
-        scanf("%d", &errorControl);
         exit(1);
     }
 
@@ -80,14 +77,15 @@ int main()
 
     refresh(); // Actualiza la pantalla
 
-    int client_socket;     // Socket del cliente
+    int client_socket;         // Socket del cliente
     int selectedProfessor = 0; // Profesor seleccionado por el cliente
     int client_choice = 0;
-    char pasarPantallar; // Opción elegida por el cliente
-    int errorControl;    // Control de errores
-    int typeProfessor = 0;   // tipo de profesor seleccionado
-    int typeProfessor2 = 0;  // tipo de profesor seleccionado
-    int bandera; 
+    char pasarPantallar;    // Opción elegida por el cliente
+    int errorControl;       // Control de errores
+    int typeProfessor = 0;  // tipo de profesor seleccionado
+    int typeProfessor2 = 0; // tipo de profesor seleccionado
+    int bandera;
+    int TestPersonal = 0;
     printw("Conectado al servidor. Elija una opción:\n");
 
     while (1)
@@ -130,7 +128,7 @@ int main()
         printw("%*s------------------------------\n", menu_x, "");
         printw("%*s|       MENU PRINCIPAL       |\n", menu_x, "");
         printw("%*s------------------------------\n", menu_x, "");
-        printw("%*s| 1. Evaluación docente      |\n", menu_x, "");
+        printw("%*s |  1. Evaluación docente     |\n", menu_x - 1, "");
         printw("%*s| 2. Mostrar lista de profes |\n", menu_x, "");
         printw("%*s|    -ores mejor evaluados   |\n", menu_x, "");
         printw("%*s| 3. Cerrar sesión          |\n", menu_x, "");
@@ -173,7 +171,7 @@ int main()
 
             // Espera la respuesta del usuario
             int user_choice;
-            mvprintw(legend_y + 9, legend_x, "Ingrese el número de la opción: ");
+            mvprintw(legend_y + 9, legend_x -10, "Ingrese el número de la opción (cualquier otra tecla regresa al menu): ");
             scanw("%d", &typeProfessor);
 
             if (send(client_socket, &typeProfessor, sizeof(int), 0) == -1)
@@ -250,7 +248,7 @@ int main()
 
                     printw("\n");
                     printw("%*sSeleccione una respuesta (1-Mala, 2-Buena, 3-Excelente): ", (max_x - 45) / 2, ""); // Pide la respuesta al cliente
-                    int userAnswer = 0;                                                                               // Respuesta del cliente
+                    int userAnswer = 0;                                                                           // Respuesta del cliente
                     scanw("%d", &userAnswer);                                                                     // Lee la respuesta del cliente
 
                     // Envía la respuesta al servidor
@@ -275,9 +273,18 @@ int main()
                 }
                 clear();
                 // Preguntas personales
+                if (TestPersonal == 1)
+                {
+                    printw("%*sEvaluación completada. Gracias por participar.\n", (max_x - 48) / 2, "");
+                    printw("\n");
+                    printw("%*sPresione enter para continuar: ", (max_x - 36) / 2, "");
+                    scanw("%hhd", &pasarPantallar); // Lee la opción elegida por el cliente
+                    close(client_socket);           // Cierra la conexión con el servidor
+                    break;
+                }
                 printw("%*sEn breve vas a recibir una encuesta personal.\n", (max_x - 48) / 2, "");
                 printw("\n");
-                printw("%*sPresione 1 y enter para continuar: ", (max_x - 36) / 2, "");
+                printw("%*sPresione enter para continuar: ", (max_x - 36) / 2, "");
                 scanw("%hhd", &pasarPantallar);                  // Lee la opción elegida por el cliente
                 struct Question receivedPersonal[MAX_QUESTIONS]; // Preguntas recibidas del servidor
                 // Recibe las preguntas del servidor
@@ -294,7 +301,7 @@ int main()
 
                     printw("\n");
                     printw("%*sSeleccione una respuesta (1-Mal, 2-Bien, 3-Excelente): ", (max_x - 45) / 2, ""); // Pide la respuesta al cliente
-                    int userAnswer = 0;                                                                             // Respuesta del cliente
+                    int userAnswer = 0;                                                                         // Respuesta del cliente
                     scanw("%d", &userAnswer);                                                                   // Lee la respuesta del cliente
 
                     // Envía la respuesta al servidor
@@ -317,9 +324,10 @@ int main()
                     }
                 }
                 clear();
-                printw("%*sEvaluación completada. Gracias por participar.\n", (max_x - 48) / 2, "");
+                printw("%*sEvaluación completada. Gracias por su cooperación.\n", (max_x - 48) / 2, "");
+                TestPersonal = 1;
                 printw("\n");
-                printw("%*sPresione 1 y enter para continuar: ", (max_x - 36) / 2, "");
+                printw("%*sPresione enter para continuar: ", (max_x - 36) / 2, "");
                 scanw("%hhd", &pasarPantallar); // Lee la opción elegida por el cliente
                 close(client_socket);           // Cierra la conexión con el servidor
                 break;
@@ -355,7 +363,7 @@ int main()
                     mvprintw(table_y + 2, table_x, "+------------------------------------------------+");
                     for (int i = 0; i < 10; i++)
                     {
-                        mvprintw(table_y + 3 + i, table_x, "| %d. %-40s   |\n", i + 1, partTimeProfessors[i].name);
+                        mvprintw(table_y + 3 + i, table_x, "| %d. %-40s    |\n", i + 1, partTimeProfessors[i].name);
                     }
                     mvprintw(table_y + 13, table_x, "+------------------------------------------------+");
                     mvprintw(table_y + 16, message_x - 10, "Profesor no válido. Por favor, Elija un profesor  (1-10): ");
@@ -389,7 +397,7 @@ int main()
 
                     printw("\n");
                     printw("%*sSeleccione una respuesta (1-Mala, 2-Buena, 3-Excelente): ", (max_x - 45) / 2, ""); // Pide la respuesta al cliente
-                    int userAnswer = 0;                                                                               // Respuesta del cliente
+                    int userAnswer = 0;                                                                           // Respuesta del cliente
                     scanw("%d", &userAnswer);                                                                     // Lee la respuesta del cliente
 
                     // Envía la respuesta al servidor
@@ -414,9 +422,18 @@ int main()
                 }
                 clear();
                 // Preguntas personales
+                if (TestPersonal == 1)
+                {
+                    printw("%*sEvaluación completada. Gracias por participar.\n", (max_x - 48) / 2, "");
+                    printw("\n");
+                    printw("%*sPresione enter para continuar: ", (max_x - 36) / 2, "");
+                    scanw("%hhd", &pasarPantallar); // Lee la opción elegida por el cliente
+                    close(client_socket);           // Cierra la conexión con el servidor
+                    break;
+                }
                 printw("%*sEn breve vas a recibir una encuesta personal.\n", (max_x - 48) / 2, "");
                 printw("\n");
-                printw("%*sPresione 1 y enter para continuar: ", (max_x - 36) / 2, "");
+                printw("%*sPresione enter para continuar: ", (max_x - 36) / 2, "");
                 scanw("%hhd", &pasarPantallar);                   // Lee la opción elegida por el cliente
                 struct Question receivedPersonal1[MAX_QUESTIONS]; // Preguntas recibidas del servidor
                 // Recibe las preguntas del servidor
@@ -433,7 +450,7 @@ int main()
 
                     printw("\n");
                     printw("%*sSeleccione una respuesta (1-Mal, 2-Bien, 3-Excelente): ", (max_x - 45) / 2, ""); // Pide la respuesta al cliente
-                    int userAnswer = 0;                                                                             // Respuesta del cliente
+                    int userAnswer = 0;                                                                         // Respuesta del cliente
                     scanw("%d", &userAnswer);                                                                   // Lee la respuesta del cliente
 
                     // Envía la respuesta al servidor
@@ -456,9 +473,10 @@ int main()
                     }
                 }
                 clear();
-                printw("%*sEvaluación completada. Gracias por participar.\n", (max_x - 48) / 2, "");
+                printw("%*sEvaluación completada. Gracias su cooperación.\n", (max_x - 48) / 2, "");
                 printw("\n");
-                printw("%*sPresione 1 y enter para continuar: ", (max_x - 36) / 2, "");
+                TestPersonal = 1;
+                printw("%*sPresione enter para continuar: ", (max_x - 36) / 2, "");
                 scanw("%hhd", &pasarPantallar); // Lee la opción elegida por el cliente
                 close(client_socket);           // Cierra la conexión con el servidor
                 break;
@@ -495,7 +513,7 @@ int main()
                     {
                         mvprintw(table_y + 3 + i, table_x, "| %d. %-40s   |\n", i + 1, hourlyProfessors[i].name);
                     }
-                    mvprintw(table_y + 13, table_x, "+------------------------------------------------+");
+                    mvprintw(table_y + 13, table_x - 1, "+------------------------------------------------+");
                     mvprintw(table_y + 16, message_x - 10, "Profesor no válido. Por favor, Elija un profesor  (1-10): ");
                     scanw("%d", &selectedProfessor); // Lee la elección del profesor
                 }
@@ -527,7 +545,7 @@ int main()
 
                     printw("\n");
                     printw("%*sSeleccione una respuesta (1-Mala, 2-Buena, 3-Excelente): ", (max_x - 45) / 2, ""); // Pide la respuesta al cliente
-                    int userAnswer = 0;                                                                               // Respuesta del cliente
+                    int userAnswer = 0;                                                                           // Respuesta del cliente
                     scanw("%d", &userAnswer);                                                                     // Lee la respuesta del cliente
 
                     // Envía la respuesta al servidor
@@ -552,9 +570,18 @@ int main()
                 }
                 clear();
                 // Preguntas personales
+                if (TestPersonal == 1)
+                {
+                    printw("%*sEvaluación completada. Gracias por su cooperación.\n", (max_x - 48) / 2, "");
+                    printw("\n");
+                    printw("%*sPresione enter para continuar: ", (max_x - 36) / 2, "");
+                    scanw("%hhd", &pasarPantallar); // Lee la opción elegida por el cliente
+                    close(client_socket);           // Cierra la conexión con el servidor
+                    break;
+                }
                 printw("%*sEn breve vas a recibir una encuesta personal.\n", (max_x - 48) / 2, "");
                 printw("\n");
-                printw("%*sPresione 1 y enter para continuar: ", (max_x - 36) / 2, "");
+                printw("%*sPresione enter para continuar: ", (max_x - 36) / 2, "");
                 scanw("%hhd", &pasarPantallar);                   // Lee la opción elegida por el cliente
                 struct Question receivedPersonal2[MAX_QUESTIONS]; // Preguntas recibidas del servidor
                 // Recibe las preguntas del servidor
@@ -571,7 +598,7 @@ int main()
 
                     printw("\n");
                     printw("%*sSeleccione una respuesta (1-Mal, 2-Bien, 3-Excelente): ", (max_x - 45) / 2, ""); // Pide la respuesta al cliente
-                    int userAnswer = 0;                                                                             // Respuesta del cliente
+                    int userAnswer = 0;                                                                         // Respuesta del cliente
                     scanw("%d", &userAnswer);                                                                   // Lee la respuesta del cliente
 
                     // Envía la respuesta al servidor
@@ -596,7 +623,8 @@ int main()
                 clear();
                 printw("%*sEvaluación completada. Gracias por participar.\n", (max_x - 48) / 2, "");
                 printw("\n");
-                printw("%*sPresione 1 y enter para continuar: ", (max_x - 36) / 2, "");
+                TestPersonal = 1;
+                printw("%*sPresione enter para continuar: ", (max_x - 36) / 2, "");
                 scanw("%hhd", &pasarPantallar); // Lee la opción elegida por el cliente
                 close(client_socket);           // Cierra la conexión con el servidor
                 break;
@@ -607,18 +635,18 @@ int main()
 
             break;
         case 2:
-        if (bandera < 5)
-                {
-                    clear(); // Limpia la pantalla
-                    printw("%*sNo hay suficientes evaluaciones para mostrar la lista de profesores mejores evaluados.\n", (max_x - 75) / 2, "");
-                    printw("\n");
-                    printw("%*sPresione 1 y enter para continuar: ", (max_x - 36) / 2, "");
-                    printw("%d", bandera);
-                    scanw("%hhd", &pasarPantallar); // Lee la opción elegida por el cliente
-                    close(client_socket);           // Cierra la conexión con el servidor
-                    break;
-                }
-            clear(); // Limpia la pantalla 
+            if (bandera < 5)
+            {
+                clear(); // Limpia la pantalla
+                printw("%*sNo hay suficientes evaluaciones para mostrar la lista de profesores mejores evaluados.\n", (max_x - 75) / 2, "");
+                printw("\n");
+                printw("%*sPresione enter para continuar: ", (max_x - 36) / 2, "");
+                // printw("%d", bandera);
+                scanw("%hhd", &pasarPantallar); // Lee la opción elegida por el cliente
+                close(client_socket);           // Cierra la conexión con el servidor
+                break;
+            }
+            clear(); // Limpia la pantalla
             // Muestra la leyenda y las opciones de tipo de profesor
             mvprintw(legend_y, legend_x, "+---------------------------------------------------------+");
             mvprintw(legend_y + 1, legend_x, "| ¿Qué lista de profesores mejores evaluados quieres ver?|");
@@ -630,7 +658,7 @@ int main()
             mvprintw(legend_y + 7, legend_x, "+--------------------------------------------------------+");
 
             // Espera la respuesta del usuario
-            mvprintw(legend_y + 9, legend_x, "Ingrese el número de la opción: ");
+            mvprintw(legend_y + 9, legend_x -10, "Ingrese el número de la opción (cualquier otra tecla regresa al menu): ");
             scanw("%d", &typeProfessor2);
             if (send(client_socket, &typeProfessor2, sizeof(int), 0) == -1)
             {
@@ -651,26 +679,26 @@ int main()
                 // aqui se imprime en pantalla la lista de los profesores
                 // mvprintw(table_y, message_x, "Lista de profesores:");
 
-                printw("%*s+---------------------------------------------------------+\n", menu_x-10, "");
-                printw("%*s|Lista de profesores  de timepo completo mejores evaluados|\n", menu_x-10, "");
-                printw("%*s+---------------------------------------------------------+\n", menu_x-10, "");
+                printw("%*s+---------------------------------------------------------+\n", menu_x - 10, "");
+                printw("%*s|Lista de profesores  de tiempo completo mejores evaluados|\n", menu_x - 10, "");
+                printw("%*s+---------------------------------------------------------+\n", menu_x - 10, "");
 
                 // Imprime los encabezados de la tabla
-                mvprintw(tableY, tableX, "+%-*s+%-*s+", nameWidth, "--------------------", scoreWidth, "----------");
-                mvprintw(tableY + 1, tableX, "|%-*s|%-*s|", nameWidth, "Nombre", scoreWidth, "Puntuación");
-                mvprintw(tableY + 2, tableX, "+%*s+%*s+", nameWidth, "--------------------", scoreWidth, "----------");
+                mvprintw(tableY, tableX + 10, "+%-*s+%-*s+", nameWidth, "--------------------", scoreWidth, "----------");
+                mvprintw(tableY + 1, tableX + 10, "|%-*s|%-*s|", nameWidth, "Nombre", scoreWidth, "Puntuación");
+                mvprintw(tableY + 2, tableX + 10, "+%*s+%*s+", nameWidth, "--------------------", scoreWidth, "----------");
 
                 // Imprime cada fila de la tabla con el formato adecuado
                 for (int i = 0; i < 10; i++)
                 {
-                    mvprintw(tableY + 3 + i, tableX, "|%-*s|%-*d|", nameWidth, FullOrdenedProfessors[i].name, scoreWidth, FullOrdenedProfessors[i].score);
-                    mvprintw(tableY + 4 + i, tableX, "+%*s+%*s+", nameWidth, "--------------------", scoreWidth, "----------");
+                    mvprintw(tableY + 3 + i, tableX + 10, "|%-*s|%-*d|", nameWidth, FullOrdenedProfessors[i].name, scoreWidth, FullOrdenedProfessors[i].score);
+                    mvprintw(tableY + 4 + i, tableX + 10, "+%*s+%*s+", nameWidth, "--------------------", scoreWidth, "----------");
                 }
                 printw("\n");
                 printw("\n");
                 printw("\n");
 
-                printw("\t \t \t \t \t Presione 1 y enter para continuar: ");
+                printw("\t \t \t \t \t  \t Presione enter para continuar: ");
                 scanw("%hhd", &pasarPantallar); // Lee la opción elegida por el cliente
                 close(client_socket);           // Cierra la conexión con el servidor
 
@@ -686,27 +714,27 @@ int main()
                 // aqui se imprime en pantalla la lista de los profesores
                 // mvprintw(table_y, message_x, "Lista de profesores:");
 
-                printw("%*s+---------------------------------------------+\n", menu_x, "");
-                printw("%*s|Lista de profesores  de medio tiempo mejores evaluados|\n", menu_x, "");
-                printw("%*s+---------------------------------------------+\n", menu_x, "");
+                printw("%*s+------------------------------------------------------+\n", menu_x -10, "");
+                printw("%*s|Lista de profesores  de medio tiempo mejores evaluados|\n", menu_x -10, "");
+                printw("%*s+------------------------------------------------------+\n", menu_x -10 , "");
 
                 // Imprime los encabezados de la tabla
-                mvprintw(tableY, tableX, "+%-*s+%-*s+", nameWidth, "--------------------", scoreWidth, "----------");
-                mvprintw(tableY + 1, tableX, "|%-*s|%-*s|", nameWidth, "Nombre", scoreWidth, "Puntuación");
-                mvprintw(tableY + 2, tableX, "+%*s+%*s+", nameWidth, "--------------------", scoreWidth, "----------");
+                mvprintw(tableY, tableX + 10, "+%-*s+%-*s+", nameWidth, "--------------------", scoreWidth, "----------");
+                mvprintw(tableY + 1, tableX + 10, "|%-*s|%-*s|", nameWidth, "Nombre", scoreWidth, "Puntuación");
+                mvprintw(tableY + 2, tableX + 10, "+%*s+%*s+", nameWidth, "--------------------", scoreWidth, "----------");
 
                 // Imprime cada fila de la tabla con el formato adecuado
 
                 for (int i = 0; i < 10; i++)
                 {
-                    mvprintw(tableY + 3 + i, tableX, "|%-*s|%-*d|", nameWidth, PartOrdenedProfessors[i].name, scoreWidth, PartOrdenedProfessors[i].score);
-                    mvprintw(tableY + 4 + i, tableX, "+%*s+%*s+", nameWidth, "--------------------", scoreWidth, "----------");
+                    mvprintw(tableY + 3 + i, tableX + 10, "|%-*s|%-*d|", nameWidth, PartOrdenedProfessors[i].name, scoreWidth, PartOrdenedProfessors[i].score);
+                    mvprintw(tableY + 4 + i, tableX + 10, "+%*s+%*s+", nameWidth, "--------------------", scoreWidth, "----------");
                 }
                 printw("\n");
                 printw("\n");
                 printw("\n");
 
-                printw("\t \t \t \t \t Presione 1 y enter para continuar: ");
+                printw("\t \t \t \t \t \t Presione enter para continuar: ");
                 scanw("%hhd", &pasarPantallar); // Lee la opción elegida por el cliente
                 close(client_socket);           // Cierra la conexión con el servidor
                 break;
@@ -719,28 +747,28 @@ int main()
                     close(client_socket);
                     exit(1);
                 }
-                printw("%*s+---------------------------------------------+\n", menu_x, "");
-                printw("%*s|Lista de profesores  por hora mejores evaluados|\n", menu_x, "");
-                printw("%*s+---------------------------------------------+\n", menu_x, "");
+                printw("%*s+-----------------------------------------------+\n", menu_x - 10, "");
+                printw("%*s|Lista de profesores por hora mejores evaluados |\n", menu_x - 10, "");
+                printw("%*s+-----------------------------------------------+\n", menu_x - 10, "");
 
                 // Imprime los encabezados de la tabla
-                mvprintw(tableY, tableX, "+%-*s+%-*s+", nameWidth, "--------------------", scoreWidth, "----------");
-                mvprintw(tableY + 1, tableX, "|%-*s|%-*s|", nameWidth, "Nombre", scoreWidth, "Puntuación");
-                mvprintw(tableY + 2, tableX, "+%*s+%*s+", nameWidth, "--------------------", scoreWidth, "----------");
+                mvprintw(tableY, tableX + 7, "+%-*s+%-*s+", nameWidth, "--------------------", scoreWidth, "----------");
+                mvprintw(tableY + 1, tableX + 7, "|%-*s|%-*s|", nameWidth, "Nombre", scoreWidth, "Puntuación");
+                mvprintw(tableY + 2, tableX + 7, "+%*s+%*s+", nameWidth, "--------------------", scoreWidth, "----------");
 
                 // Imprime cada fila de la tabla con el formato adecuado
 
                 for (int i = 0; i < 10; i++)
                 {
-                    mvprintw(tableY + 3 + i, tableX, "|%-*s|%-*d|", nameWidth, HourlyOrdenedProfessors[i].name, scoreWidth, HourlyOrdenedProfessors[i].score);
-                    mvprintw(tableY + 4 + i, tableX, "+%*s+%*s+", nameWidth, "--------------------", scoreWidth, "----------");
+                    mvprintw(tableY + 3 + i, tableX + 7, "|%-*s|%-*d|", nameWidth, HourlyOrdenedProfessors[i].name, scoreWidth, HourlyOrdenedProfessors[i].score);
+                    mvprintw(tableY + 4 + i, tableX + 7, "+%*s+%*s+", nameWidth, "--------------------", scoreWidth, "----------");
                 }
 
                 printw("\n");
                 printw("\n");
                 printw("\n");
 
-                printw("\t \t \t \t \t Presione 1 y enter para continuar: ");
+                printw("\t \t \t \t \t     Presione enter para continuar: ");
                 scanw("%hhd", &pasarPantallar); // Lee la opción elegida por el cliente
                 close(client_socket);           // Cierra la conexión con el servidor
                 break;
